@@ -3,12 +3,7 @@
   "buildCommand": "npm install --prefix client && npm run --prefix client build",
   "outputDirectory": "client/dist",
   "installCommand": "npm install --prefix server && npm install --prefix client",
-  "builds": [
-    {
-      "src": "api/index.js",
-      "use": "@vercel/node"
-    }
-  ],
+
   "rewrites": [
     {
       "source": "/api/(.*)",
