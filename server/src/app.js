@@ -9,12 +9,12 @@ const app = express();
 // Security headers
 app.use(helmet());
 
-// CORS — allow configured CLIENT_URL, all Vercel preview domains, and localhost
+// CORS — allow configured CLIENT_URL, all Vercel preview domains, and localhost (any port)
 const allowedOrigins = [
   process.env.CLIENT_URL,
   'http://localhost:5173',
   'http://localhost:3000',
-];
+].filter(Boolean);
 
 app.use(
   cors({
@@ -23,6 +23,8 @@ app.use(
       if (!origin) return callback(null, true);
       // Allow if it's in the explicit list
       if (allowedOrigins.includes(origin)) return callback(null, true);
+      // Allow any localhost / 127.0.0.1 port (e.g. 5173, 5174, etc.)
+      if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return callback(null, true);
       // Allow any *.vercel.app domain (preview deployments)
       if (/\.vercel\.app$/.test(origin)) return callback(null, true);
       callback(new Error(`CORS: origin ${origin} not allowed`));
@@ -49,19 +51,3 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/customers', require('./routes/customers'));
 app.use('/api/milk', require('./routes/milk'));
-app.use('/api/billing', require('./routes/billing'));
-app.use('/api/employees', require('./routes/employees'));
-app.use('/api/windows', require('./routes/windows'));
-app.use('/api/settings', require('./routes/settings'));
-app.use('/api/payments', require('./routes/payments'));
-app.use('/api/dashboard', require('./routes/dashboard'));
-
-// 404
-app.use((req, res) => {
-  res.status(404).json({ success: false, message: `Route ${req.originalUrl} not found.` });
-});
-
-// Centralized error handler
-app.use(errorHandler);
-
-module.exports = app;
