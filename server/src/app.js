@@ -25,11 +25,14 @@ app.use(
       if (allowedOrigins.includes(origin)) return callback(null, true);
       // Allow any *.vercel.app domain (preview deployments)
       if (/\.vercel\.app$/.test(origin)) return callback(null, true);
+      // Allow any localhost port in development
+      if (/^http:\/\/localhost:\d+$/.test(origin)) return callback(null, true);
       callback(new Error(`CORS: origin ${origin} not allowed`));
     },
     credentials: true,
   })
 );
+
 
 // Body parser
 app.use(express.json({ limit: '10mb' }));

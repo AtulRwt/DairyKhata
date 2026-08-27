@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 
@@ -8,119 +9,171 @@ const navItems = [
   { path: '/employees', label: 'Employees', icon: '🧑‍💼', ownerOnly: true },
   { path: '/windows',   label: 'Windows',   icon: '🪟',  ownerOnly: true },
   { path: '/payments',  label: 'Payments',  icon: '💰',  ownerOnly: true },
-  { path: '/settings',  label: 'Settings',  icon: '⚙️',  ownerOnly: true },
 ];
+
+// Profile dropdown — shared between mobile header & desktop sidebar
+function ProfileDropdown({ user, role, onLogout, onSettings }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  // Close on outside click
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <div className="relative" ref={ref}>
+      {/* Avatar button */}
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-1.5 rounded-xl hover:bg-gray-100 transition-colors px-1.5 py-1 min-h-0"
+        aria-label="Profile menu"
+      >
+        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white font-bold text-xs shadow-sm flex-shrink-0">
+          {user?.name?.charAt(0)?.toUpperCase()}
+        </div>
+        <div className="hidden sm:block text-left">
+          <p className="text-xs font-semibold text-gray-800 leading-tight truncate max-w-[90px]">{user?.name?.split(' ')[0]}</p>
+          <p className="text-[10px] text-gray-400 capitalize leading-tight">{role}</p>
+        </div>
+        <svg className={`w-3 h-3 text-gray-400 transition-transform hidden sm:block ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {/* Dropdown panel */}
+      {open && (
+        <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-xl border border-gray-100 z-[100] overflow-hidden">
+          {/* User info header */}
+          <div className="px-4 py-3 bg-gradient-to-r from-green-50 to-emerald-50 border-b border-gray-100">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                {user?.name?.charAt(0)?.toUpperCase()}
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-gray-800 truncate">{user?.name}</p>
+                <p className="text-xs text-gray-500 capitalize">{role}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Menu items */}
+          <div className="py-1">
+            <button
+              onClick={() => { onSettings(); setOpen(false); }}
+              className="w-full text-left flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors min-h-0"
+            >
+              <span>⚙️</span>
+              <span>Settings</span>
+            </button>
+          </div>
+
+          <div className="border-t border-gray-100 py-1">
+            <button
+              onClick={() => { onLogout(); setOpen(false); }}
+              className="w-full text-left flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors min-h-0"
+            >
+              <span>🚪</span>
+              <span>Logout</span>
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function OwnerLayout() {
   const { user, role, logout } = useAuthStore();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
+  const handleLogout = () => { logout(); navigate('/login'); };
+  const handleSettings = () => navigate('/settings');
 
   const visibleNavItems = navItems.filter(
     (item) => !item.ownerOnly || role === 'owner'
   );
 
-  // Bottom nav: max 5 most important items on mobile
+  // Bottom nav: max 5 items on mobile
   const bottomNavItems = visibleNavItems.slice(0, 5);
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
 
-      {/* ── DESKTOP SIDEBAR (hidden on mobile) ── */}
+      {/* ── DESKTOP SIDEBAR ── */}
       <aside className="hidden md:flex w-52 flex-shrink-0 bg-white border-r border-gray-200 flex-col">
         {/* Logo */}
-        <div className="p-4 border-b border-gray-100">
+        <div className="px-4 py-4 border-b border-gray-100">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center shadow-sm">
               <span className="text-white text-sm">🥛</span>
             </div>
-            <span className="font-bold text-gray-800 text-lg">
+            <span className="font-bold text-gray-800 text-lg tracking-tight">
               Dairy<span className="text-green-600">Khata</span>
             </span>
           </div>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+        <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
           {visibleNavItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                   isActive
                     ? 'bg-green-50 text-green-700 font-semibold'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
                 }`
               }
             >
-              <span className="text-base">{item.icon}</span>
+              <span className="text-base w-5 text-center">{item.icon}</span>
               {item.label}
             </NavLink>
           ))}
         </nav>
 
-        {/* User info + logout */}
+        {/* Profile section */}
         <div className="p-3 border-t border-gray-100">
-          <div className="flex items-center gap-2 px-2 mb-2">
-            <div className="w-7 h-7 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-semibold text-xs">
-              {user?.name?.charAt(0)?.toUpperCase()}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-gray-800 truncate">{user?.name}</p>
-              <p className="text-xs text-gray-400 capitalize">{role}</p>
-            </div>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="w-full text-left px-3 py-2 text-xs text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-          >
-            🚪 Logout
-          </button>
+          <ProfileDropdown
+            user={user}
+            role={role}
+            onLogout={handleLogout}
+            onSettings={handleSettings}
+          />
         </div>
       </aside>
 
       {/* ── MAIN CONTENT ── */}
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
 
-        {/* Mobile top header (hidden on desktop) */}
-        <header className="md:hidden flex-shrink-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+        {/* Mobile top header */}
+        <header className="md:hidden flex-shrink-0 bg-white border-b border-gray-200 px-4 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 bg-green-600 rounded-lg flex items-center justify-center">
               <span className="text-white text-xs">🥛</span>
             </div>
-            <span className="font-bold text-gray-800">
+            <span className="font-bold text-gray-800 tracking-tight">
               Dairy<span className="text-green-600">Khata</span>
             </span>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5">
-              <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-semibold text-xs">
-                {user?.name?.charAt(0)?.toUpperCase()}
-              </div>
-              <span className="text-xs text-gray-600 font-medium truncate max-w-[80px]">
-                {user?.name?.split(' ')[0]}
-              </span>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="text-xs text-red-500 font-medium py-1.5 px-2.5 rounded-lg hover:bg-red-50 transition-colors"
-            >
-              Logout
-            </button>
-          </div>
+          <ProfileDropdown
+            user={user}
+            role={role}
+            onLogout={handleLogout}
+            onSettings={handleSettings}
+          />
         </header>
 
-        {/* Page content — extra bottom padding on mobile so content clears the nav bar */}
+        {/* Page content */}
         <main className="flex-1 overflow-auto pb-16 md:pb-0">
           <Outlet />
         </main>
 
-        {/* ── MOBILE BOTTOM NAV (hidden on desktop) ── */}
+        {/* ── MOBILE BOTTOM NAV ── */}
         <nav
           className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex z-50"
           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}

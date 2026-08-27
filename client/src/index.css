@@ -173,6 +173,13 @@
     border-radius: 0;
   }
 
+  @media (max-width: 768px) {
+    .register-cell-input {
+      font-size: 16px !important;
+    }
+  }
+
+
   /* Cell display value */
   .register-cell-value {
     display: flex;

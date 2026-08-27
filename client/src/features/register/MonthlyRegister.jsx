@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { milkAPI, windowsAPI } from '../../services/api';
 import EditableCell from './EditableCell';
+import QuickEditModal from './QuickEditModal';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import {
   getDaysInMonth,
@@ -38,10 +39,19 @@ export default function MonthlyRegister() {
   // Selected / editing cell: { customerId, day }
   const [selected, setSelected] = useState(null);
   const [editing, setEditing] = useState(null);
+  
+  // Track window size for mobile quick edit modal vs desktop inline edit
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
 
   const tableRef = useRef(null);
 
-  // Build customer index for keyboard navigation
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Build customer index for navigation
   const customerIds = registerData.map((r) => r.customer._id.toString());
 
   // Load windows
@@ -105,7 +115,7 @@ export default function MonthlyRegister() {
     );
   }, []);
 
-  // Keyboard navigation between cells
+  // Cell navigation between cells
   const handleNavigate = useCallback((customerId, day, direction) => {
     const cidStr = customerId.toString();
     const cidIndex = customerIds.indexOf(cidStr);
@@ -155,11 +165,15 @@ export default function MonthlyRegister() {
     }
   }
 
+  // Active editing row for QuickEditModal
+  const activeEditingRow = editing
+    ? registerData.find((r) => r.customer._id.toString() === editing.customerId.toString())
+    : null;
+
   return (
     <div className="flex flex-col h-full">
       {/* Toolbar */}
       <div className="flex-shrink-0 bg-white border-b border-gray-200 px-3 py-2 sm:px-4 sm:py-3">
-        {/* Row 1: title + selectors */}
         <div className="flex items-center gap-2 flex-wrap">
           <h1 className="text-base font-bold text-gray-800 mr-1 hidden sm:block">Monthly Register</h1>
 
@@ -185,7 +199,7 @@ export default function MonthlyRegister() {
             ))}
           </select>
 
-          {/* Window filter — hidden on very small screens to save space */}
+          {/* Window filter */}
           <select
             value={windowFilter}
             onChange={(e) => setWindowFilter(e.target.value)}
@@ -250,7 +264,7 @@ export default function MonthlyRegister() {
           <div className="text-center py-16 text-gray-400">
             <p className="text-4xl mb-3">📋</p>
             <p className="font-medium text-gray-600">No customers found</p>
-            <p className="text-sm mt-1">Add customers first, then they'll appear here.</p>
+            <p className="text-sm mt-1">Add customers first, then they&apos;ll appear here.</p>
           </div>
         ) : (
           <div
@@ -322,7 +336,7 @@ export default function MonthlyRegister() {
                         const isSelectedCell =
                           selected?.customerId === cid && selected?.day === day;
                         const isEditingCell =
-                          editing?.customerId === cid && editing?.day === day;
+                          !isMobile && editing?.customerId === cid && editing?.day === day;
                         return (
                           <EditableCell
                             key={day}
@@ -335,7 +349,10 @@ export default function MonthlyRegister() {
                             isSelected={isSelectedCell}
                             isEditing={isEditingCell}
                             onSelect={(cId, d) => setSelected({ customerId: cId, day: d })}
-                            onStartEdit={(cId, d) => setEditing({ customerId: cId, day: d })}
+                            onStartEdit={(cId, d) => {
+                              setSelected({ customerId: cId, day: d });
+                              setEditing({ customerId: cId, day: d });
+                            }}
                             onStopEdit={() => setEditing(null)}
                             onValueChange={handleValueChange}
                             onNavigate={handleNavigate}
@@ -392,6 +409,23 @@ export default function MonthlyRegister() {
           </div>
         )}
       </div>
+
+      {/* Mobile Quick Edit Modal */}
+      {isMobile && editing && activeEditingRow && (
+        <QuickEditModal
+          customerId={editing.customerId}
+          customerName={activeEditingRow.customer.name}
+          day={editing.day}
+          month={month}
+          year={year}
+          entry={activeEditingRow.entries[editing.day]}
+          onClose={() => setEditing(null)}
+          onValueChange={handleValueChange}
+          onNavigate={handleNavigate}
+          totalCustomers={filteredData.length}
+          customerIndex={customerIds.indexOf(editing.customerId.toString())}
+        />
+      )}
 
       {/* Status bar */}
       <div className="flex-shrink-0 bg-white border-t border-gray-100 px-3 sm:px-4 py-1.5 flex items-center gap-3 text-xs text-gray-500 overflow-x-auto">
