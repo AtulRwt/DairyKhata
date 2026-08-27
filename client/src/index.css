@@ -1,0 +1,322 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --color-primary: #16a34a;
+    --color-primary-dark: #15803d;
+    --color-primary-light: #bbf7d0;
+    --color-accent: #0ea5e9;
+    --color-danger: #dc2626;
+    --color-warning: #f59e0b;
+    --color-text: #111827;
+    --color-text-muted: #6b7280;
+    --color-border: #e5e7eb;
+    --color-surface: #ffffff;
+    --color-bg: #f9fafb;
+
+    /* Register-specific variables */
+    --register-cell-width: 48px;
+    --register-cell-height: 36px;
+    --register-name-width: 160px;
+    --register-font-size: 13px;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+  }
+}
+
+@layer components {
+  /* ==========================================
+     MONTHLY REGISTER TABLE STYLES
+     ========================================== */
+  .register-wrapper {
+    overflow: auto;
+    position: relative;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background: #fff;
+    transform-origin: top left;
+  }
+
+  .register-table {
+    border-collapse: collapse;
+    font-size: var(--register-font-size);
+    min-width: 100%;
+    table-layout: fixed;
+  }
+
+  .register-table th,
+  .register-table td {
+    border: 1px solid #e5e7eb;
+    padding: 0;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+
+  /* Sticky customer name column */
+  .register-table .col-name {
+    position: sticky;
+    left: 0;
+    z-index: 20;
+    width: var(--register-name-width);
+    min-width: var(--register-name-width);
+    max-width: var(--register-name-width);
+    text-align: left;
+    background: #fff;
+    padding: 0 8px;
+    font-weight: 500;
+    border-right: 2px solid #d1d5db;
+  }
+
+  /* Sticky header row */
+  .register-table .row-header th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #f3f4f6;
+    font-weight: 600;
+    height: var(--register-cell-height);
+  }
+
+  /* Corner cell: sticky top+left */
+  .register-table .row-header .col-name {
+    z-index: 30;
+    background: #f3f4f6;
+  }
+
+  /* Regular data cells */
+  .register-table .col-day {
+    width: var(--register-cell-width);
+    min-width: var(--register-cell-width);
+    max-width: var(--register-cell-width);
+    height: var(--register-cell-height);
+    cursor: pointer;
+  }
+
+  .register-table .col-total {
+    position: sticky;
+    right: 80px;
+    z-index: 10;
+    background: #fafafa;
+    font-weight: 600;
+    min-width: 70px;
+    border-left: 2px solid #d1d5db;
+  }
+
+  .register-table .col-amount {
+    position: sticky;
+    right: 0;
+    z-index: 10;
+    background: #fafafa;
+    font-weight: 600;
+    min-width: 80px;
+    border-left: 1px solid #d1d5db;
+  }
+
+  /* Row header sticky for both total and amount */
+  .register-table .row-header .col-total,
+  .register-table .row-header .col-amount {
+    z-index: 30;
+    background: #f3f4f6;
+  }
+
+  /* Editable cell input */
+  .register-cell-input {
+    width: 100%;
+    height: 100%;
+    border: none;
+    outline: 2px solid #16a34a;
+    outline-offset: -2px;
+    text-align: center;
+    font-size: var(--register-font-size);
+    font-family: inherit;
+    background: #f0fdf4;
+    padding: 0;
+    border-radius: 0;
+  }
+
+  /* Cell display value */
+  .register-cell-value {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 0 4px;
+    min-height: var(--register-cell-height);
+  }
+
+  /* Today highlight */
+  .register-table .col-day.today-col {
+    background-color: #eff6ff !important;
+  }
+  .register-table .row-header .today-col {
+    background-color: #dbeafe !important;
+    color: #1d4ed8;
+    font-weight: 700;
+  }
+
+  /* Weekend highlight */
+  .register-table .col-day.weekend-col {
+    background-color: #fafafa;
+  }
+
+  /* Selected cell */
+  .register-table .col-day.selected-cell {
+    outline: 2px solid #16a34a;
+    outline-offset: -2px;
+    z-index: 5;
+  }
+
+  /* Cell with value */
+  .register-table .col-day.has-value {
+    color: #111827;
+  }
+
+  /* Empty cell */
+  .register-table .col-day.empty-cell {
+    color: #d1d5db;
+  }
+
+  /* Row hover */
+  .register-table tbody tr:hover .col-name {
+    background-color: #f0fdf4;
+  }
+  .register-table tbody tr:hover td.col-day {
+    background-color: #f9fafb;
+  }
+
+  /* ==========================================
+     COMMON COMPONENT STYLES
+     ========================================== */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #16a34a;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.15s;
+  }
+  .btn-primary:hover { background-color: #15803d; }
+  .btn-primary:disabled { background-color: #9ca3af; cursor: not-allowed; }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #fff;
+    color: #374151;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 14px;
+    border: 1px solid #d1d5db;
+    cursor: pointer;
+    transition: background-color 0.15s;
+  }
+  .btn-secondary:hover { background-color: #f9fafb; }
+
+  .btn-danger {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #dc2626;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.15s;
+  }
+  .btn-danger:hover { background-color: #b91c1c; }
+
+  .form-input {
+    width: 100%;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .form-input:focus {
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+  }
+
+  .form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 4px;
+  }
+
+  .card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 16px;
+  }
+
+  .badge-paid {
+    display: inline-flex;
+    align-items: center;
+    background: #dcfce7;
+    color: #166534;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .badge-unpaid {
+    display: inline-flex;
+    align-items: center;
+    background: #fee2e2;
+    color: #991b1b;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .badge-partial {
+    display: inline-flex;
+    align-items: center;
+    background: #fef3c7;
+    color: #92400e;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+}
