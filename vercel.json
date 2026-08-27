@@ -1,9 +1,8 @@
 {
   "version": 2,
-  "buildCommand": "npm run --prefix client build",
+  "buildCommand": "npm run build",
   "outputDirectory": "client/dist",
-  "installCommand": "npm install --prefix server && npm install --prefix client --include=dev",
-
+  "installCommand": "npm run install:all",
   "rewrites": [
     {
       "source": "/api/(.*)",
