@@ -129,4 +129,58 @@ DairyKhata/
 
 ---
 
+## Deploying to Vercel
+
+This project is configured as a Vercel monorepo — the React frontend is served as static
+output and the Express backend runs as a Serverless Function.
+
+### 1. Push to GitHub
+
+```bash
+git add .
+git commit -m "chore: vercel deployment ready"
+git push
+```
+
+### 2. Import into Vercel
+
+Go to [vercel.com](https://vercel.com) → **Add New Project** → import your GitHub repo.
+Vercel will auto-detect the `vercel.json` configuration.
+
+### 3. Set Environment Variables
+
+In the Vercel project dashboard → **Settings → Environment Variables**, add:
+
+| Variable | Value |
+|---|---|
+| `MONGODB_URI` | Your MongoDB Atlas connection string |
+| `JWT_SECRET` | A long, random secret string |
+| `JWT_EXPIRES_IN` | `7d` |
+| `NODE_ENV` | `production` |
+| `CLIENT_URL` | Your Vercel URL, e.g. `https://dairykhata.vercel.app` |
+
+### 4. Configure MongoDB Atlas
+
+- Go to **Atlas → Network Access** → **Add IP Address**
+- Add `0.0.0.0/0` to allow all IPs (Vercel functions use dynamic IPs)
+- Whitelist is under: Atlas → Security → Network Access
+
+### 5. Deploy
+
+Vercel will automatically deploy on every push to `main`. You can also trigger a manual
+deploy from the dashboard.
+
+### Verify
+
+After deploy, visit:
+```
+https://<your-app>.vercel.app/api/health
+```
+Should return:
+```json
+{ "success": true, "message": "DairyKhata API is running" }
+```
+
+---
+
 Made with ❤️ for small dairy businesses

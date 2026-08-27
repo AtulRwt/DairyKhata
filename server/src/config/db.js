@@ -6,8 +6,11 @@ const connectDB = async () => {
     console.log(`✅ MongoDB connected: ${conn.connection.host}`);
   } catch (error) {
     console.error('❌ MongoDB connection error:', error.message);
-    process.exit(1);
+    // Throw instead of process.exit so serverless runtimes can handle the error
+    // gracefully and return a 500 to the client instead of crashing the process.
+    throw error;
   }
 };
 
 module.exports = connectDB;
+

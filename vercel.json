@@ -2,7 +2,12 @@
   "version": 2,
   "buildCommand": "npm run build",
   "outputDirectory": "client/dist",
-  "installCommand": "npm run install:all",
+  "installCommand": "npm install && cd server && npm install && cd ../client && npm install --include=dev",
+  "functions": {
+    "api/index.js": {
+      "maxDuration": 30
+    }
+  },
   "rewrites": [
     {
       "source": "/api/(.*)",
@@ -14,4 +19,5 @@
     }
   ]
 }
+
 
