@@ -44,7 +44,7 @@ export default function LoginPage() {
         <button
           type="button"
           onClick={() => setTab('owner')}
-          className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${
+          className={`flex-1 justify-center py-1.5 text-sm font-medium rounded-md transition-all ${
             tab === 'owner'
               ? 'bg-white text-gray-900 shadow-sm'
               : 'text-gray-500 hover:text-gray-700'
@@ -55,7 +55,7 @@ export default function LoginPage() {
         <button
           type="button"
           onClick={() => setTab('employee')}
-          className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${
+          className={`flex-1 justify-center py-1.5 text-sm font-medium rounded-md transition-all ${
             tab === 'employee'
               ? 'bg-white text-gray-900 shadow-sm'
               : 'text-gray-500 hover:text-gray-700'

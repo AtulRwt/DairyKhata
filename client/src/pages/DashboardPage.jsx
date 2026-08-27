@@ -34,7 +34,7 @@ export default function DashboardPage() {
   if (!stats) return null;
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6">
       <div className="mb-6">
         <h1 className="text-xl font-bold text-gray-800">Dashboard</h1>
         <p className="text-sm text-gray-500 mt-0.5">
@@ -98,22 +98,22 @@ export default function DashboardPage() {
       {/* Quick actions */}
       <div className="mb-8">
         <h2 className="text-sm font-semibold text-gray-700 mb-3">Quick Actions</h2>
-        <div className="flex gap-3 flex-wrap">
+        <div className="flex gap-3 flex-col sm:flex-row sm:flex-wrap">
           <button
             onClick={() => navigate('/register')}
-            className="btn-primary"
+            className="btn-primary w-full sm:w-auto justify-center"
           >
             📋 Open Register
           </button>
           <button
             onClick={() => navigate('/customers')}
-            className="btn-secondary"
+            className="btn-secondary w-full sm:w-auto justify-center"
           >
             👥 Manage Customers
           </button>
           <button
             onClick={() => navigate('/payments')}
-            className="btn-secondary"
+            className="btn-secondary w-full sm:w-auto justify-center"
           >
             💰 View Payments
           </button>

@@ -50,7 +50,7 @@ export default function SettingsPage() {
     : '';
 
   return (
-    <div className="p-6 max-w-2xl">
+    <div className="p-4 sm:p-6 max-w-2xl">
       <div className="mb-6">
         <h1 className="text-xl font-bold text-gray-800">Settings</h1>
         <p className="text-sm text-gray-500 mt-0.5">Configure your business information</p>
@@ -111,7 +111,7 @@ export default function SettingsPage() {
         </div>
 
         <div>
-          <button type="submit" disabled={saving} className="btn-primary">
+          <button type="submit" disabled={saving} className="btn-primary w-full sm:w-auto justify-center">
             {saving ? 'Saving...' : '💾 Save Settings'}
           </button>
         </div>

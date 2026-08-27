@@ -23,6 +23,14 @@
 
   * {
     box-sizing: border-box;
+    /* Remove 300ms tap delay on mobile */
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  html {
+    /* Prevent font size inflation on iOS landscape */
+    -webkit-text-size-adjust: 100%;
   }
 
   body {
@@ -30,13 +38,29 @@
     background-color: var(--color-bg);
     color: var(--color-text);
     -webkit-font-smoothing: antialiased;
+    /* Prevent horizontal scroll on body */
+    overflow-x: hidden;
   }
 
   input[type="number"]::-webkit-inner-spin-button,
   input[type="number"]::-webkit-outer-spin-button {
     -webkit-appearance: none;
   }
+
+  /* Ensure all interactive elements have minimum 44px touch target */
+  button, a, [role="button"] {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* Exception for inline text links */
+  a.inline-link {
+    min-height: unset;
+    display: inline;
+  }
 }
+
 
 @layer components {
   /* ==========================================

@@ -158,15 +158,16 @@ export default function MonthlyRegister() {
   return (
     <div className="flex flex-col h-full">
       {/* Toolbar */}
-      <div className="flex-shrink-0 bg-white border-b border-gray-200 px-4 py-3">
-        <div className="flex items-center gap-3 flex-wrap">
-          <h1 className="text-base font-bold text-gray-800 mr-2">Monthly Register</h1>
+      <div className="flex-shrink-0 bg-white border-b border-gray-200 px-3 py-2 sm:px-4 sm:py-3">
+        {/* Row 1: title + selectors */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <h1 className="text-base font-bold text-gray-800 mr-1 hidden sm:block">Monthly Register</h1>
 
           {/* Month selector */}
           <select
             value={month}
             onChange={(e) => setMonth(parseInt(e.target.value))}
-            className="form-input w-auto py-1.5 pr-8"
+            className="form-input py-1.5 pr-8 text-sm flex-1 sm:flex-none sm:w-auto"
           >
             {MONTHS.map((m) => (
               <option key={m.value} value={m.value}>{m.label}</option>
@@ -177,18 +178,18 @@ export default function MonthlyRegister() {
           <select
             value={year}
             onChange={(e) => setYear(parseInt(e.target.value))}
-            className="form-input w-auto py-1.5"
+            className="form-input py-1.5 w-20 sm:w-auto text-sm"
           >
             {years.map((y) => (
               <option key={y} value={y}>{y}</option>
             ))}
           </select>
 
-          {/* Window filter */}
+          {/* Window filter — hidden on very small screens to save space */}
           <select
             value={windowFilter}
             onChange={(e) => setWindowFilter(e.target.value)}
-            className="form-input w-auto py-1.5"
+            className="form-input py-1.5 text-sm hidden xs:block sm:block flex-1 sm:flex-none sm:w-auto"
           >
             <option value="">All Windows</option>
             {windows.map((w) => (
@@ -197,20 +198,20 @@ export default function MonthlyRegister() {
           </select>
 
           {/* Search */}
-          <div className="flex-1 min-w-32 max-w-56">
+          <div className="flex-1 min-w-0 sm:min-w-32 sm:max-w-56">
             <input
               type="text"
-              className="form-input py-1.5"
-              placeholder="🔍 Search customer..."
+              className="form-input py-1.5 text-sm w-full"
+              placeholder="🔍 Search..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
 
-          <div className="flex-1" />
+          <div className="flex-1 sm:flex-none" />
 
-          {/* Zoom controls */}
-          <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+          {/* Zoom controls — hide on mobile */}
+          <div className="hidden sm:flex items-center gap-1 bg-gray-100 rounded-lg p-1">
             <button
               onClick={() => setZoomIndex((z) => Math.max(z - 1, 0))}
               disabled={zoomIndex === 0}
@@ -234,7 +235,7 @@ export default function MonthlyRegister() {
 
           {/* Refresh */}
           <button onClick={loadData} className="btn-secondary py-1.5 text-xs" title="Refresh data">
-            ↻ Refresh
+            ↻ <span className="hidden sm:inline">Refresh</span>
           </button>
         </div>
       </div>
@@ -393,11 +394,11 @@ export default function MonthlyRegister() {
       </div>
 
       {/* Status bar */}
-      <div className="flex-shrink-0 bg-white border-t border-gray-100 px-4 py-1.5 flex items-center gap-4 text-xs text-gray-500">
+      <div className="flex-shrink-0 bg-white border-t border-gray-100 px-3 sm:px-4 py-1.5 flex items-center gap-3 text-xs text-gray-500 overflow-x-auto">
         <span>{filteredData.length} customers</span>
         <span>·</span>
-        <span>{getMonthName(month)} {year}</span>
-        <span>·</span>
+        <span className="hidden sm:inline">{getMonthName(month)} {year}</span>
+        <span className="hidden sm:inline">·</span>
         <span>
           Total:{' '}
           <strong className="text-green-700">
@@ -412,7 +413,7 @@ export default function MonthlyRegister() {
           </strong>
         </span>
         <span className="flex-1" />
-        <span className="text-gray-400">Click cell to edit · Enter/Tab to move · Arrow keys to navigate</span>
+        <span className="text-gray-400 hidden lg:inline">Click cell to edit · Enter/Tab to move · Arrow keys to navigate</span>
       </div>
     </div>
   );

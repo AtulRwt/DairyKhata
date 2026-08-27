@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { paymentsAPI, customersAPI } from '../services/api';
+import { paymentsAPI } from '../services/api';
 import { MONTHS, getYears, formatCurrency, getToday } from '../utils/dateUtils';
 import LoadingSpinner from '../components/LoadingSpinner';
 
@@ -47,81 +47,117 @@ export default function PaymentsPage() {
   };
 
   const totalAmount = payments.reduce((s, p) => s + (p.totalAmount || 0), 0);
-  const totalPaid = payments.reduce((s, p) => s + (p.amountPaid || 0), 0);
+  const totalPaid   = payments.reduce((s, p) => s + (p.amountPaid || 0), 0);
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-xl font-bold text-gray-800">Payments</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Monthly payment tracking</p>
-        </div>
+    <div className="p-4 sm:p-6">
+      {/* Header */}
+      <div className="mb-4">
+        <h1 className="text-xl font-bold text-gray-800">Payments</h1>
+        <p className="text-sm text-gray-500 mt-0.5">Monthly payment tracking</p>
       </div>
 
-      {/* Filters */}
-      <div className="flex gap-3 mb-4 flex-wrap items-center">
+      {/* Filters — horizontally scrollable on mobile */}
+      <div className="flex gap-2 mb-4 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap">
         <select
           value={month}
           onChange={(e) => setMonth(parseInt(e.target.value))}
-          className="form-input w-auto py-1.5"
+          className="form-input py-2 flex-shrink-0"
         >
           {MONTHS.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
         </select>
         <select
           value={year}
           onChange={(e) => setYear(parseInt(e.target.value))}
-          className="form-input w-auto py-1.5"
+          className="form-input py-2 w-24 flex-shrink-0"
         >
           {getYears().map((y) => <option key={y} value={y}>{y}</option>)}
         </select>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="form-input w-auto py-1.5"
+          className="form-input py-2 flex-shrink-0"
         >
-          <option value="">All Status</option>
+          <option value="">All</option>
           <option value="UNPAID">Unpaid</option>
-          <option value="PARTIALLY_PAID">Partially Paid</option>
+          <option value="PARTIALLY_PAID">Partial</option>
           <option value="PAID">Paid</option>
         </select>
+      </div>
 
-        <div className="flex-1" />
-
-        <div className="flex gap-4 text-sm">
-          <div className="text-gray-500">
-            Total: <strong className="text-gray-800">{formatCurrency(totalAmount)}</strong>
-          </div>
-          <div className="text-gray-500">
-            Collected: <strong className="text-green-700">{formatCurrency(totalPaid)}</strong>
-          </div>
-          <div className="text-gray-500">
-            Pending: <strong className="text-red-600">{formatCurrency(totalAmount - totalPaid)}</strong>
-          </div>
+      {/* Summary bar */}
+      <div className="grid grid-cols-3 gap-2 mb-4">
+        <div className="card p-3 text-center">
+          <p className="text-xs text-gray-500">Total</p>
+          <p className="text-sm font-bold text-gray-800">{formatCurrency(totalAmount)}</p>
+        </div>
+        <div className="card p-3 text-center">
+          <p className="text-xs text-gray-500">Collected</p>
+          <p className="text-sm font-bold text-green-700">{formatCurrency(totalPaid)}</p>
+        </div>
+        <div className="card p-3 text-center">
+          <p className="text-xs text-gray-500">Pending</p>
+          <p className="text-sm font-bold text-red-600">{formatCurrency(totalAmount - totalPaid)}</p>
         </div>
       </div>
 
-      {loading ? <LoadingSpinner /> : (
-        <div className="card p-0 overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-4 py-3 text-left font-semibold text-gray-600">Customer</th>
-                <th className="px-4 py-3 text-right font-semibold text-gray-600">Milk (L)</th>
-                <th className="px-4 py-3 text-right font-semibold text-gray-600">Amount</th>
-                <th className="px-4 py-3 text-right font-semibold text-gray-600">Paid</th>
-                <th className="px-4 py-3 text-center font-semibold text-gray-600">Status</th>
-                <th className="px-4 py-3 text-right font-semibold text-gray-600">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {payments.length === 0 ? (
+      {loading ? <LoadingSpinner /> : payments.length === 0 ? (
+        <div className="text-center py-16 text-gray-400">
+          <p className="text-4xl mb-3">💰</p>
+          <p className="font-medium text-gray-600">No payment records</p>
+          <p className="text-sm mt-1">No payments found for this period.</p>
+        </div>
+      ) : (
+        <>
+          {/* Mobile card list */}
+          <div className="space-y-2 md:hidden">
+            {payments.map((payment) => (
+              <div key={payment._id} className="card p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-gray-800">{payment.customerId?.name}</p>
+                    <p className="text-xs text-gray-400">{payment.customerId?.phone}</p>
+                    <div className="flex items-center gap-3 mt-2 text-sm">
+                      <span className="text-gray-600">{payment.totalMilk} L</span>
+                      <span className="font-medium text-gray-800">{formatCurrency(payment.totalAmount)}</span>
+                      {payment.amountPaid > 0 && (
+                        <span className="text-green-600 text-xs">Paid: {formatCurrency(payment.amountPaid)}</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    <StatusBadge status={payment.status} />
+                    <select
+                      value={payment.status}
+                      disabled={updatingId === payment._id}
+                      onChange={(e) => handleStatusChange(payment, e.target.value)}
+                      className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white"
+                    >
+                      {STATUS_OPTIONS.map((s) => (
+                        <option key={s} value={s}>{s.replace('_', ' ')}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop table */}
+          <div className="hidden md:block card p-0 overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center text-gray-400">
-                    No payment records for this period.
-                  </td>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-600">Customer</th>
+                  <th className="px-4 py-3 text-right font-semibold text-gray-600">Milk (L)</th>
+                  <th className="px-4 py-3 text-right font-semibold text-gray-600">Amount</th>
+                  <th className="px-4 py-3 text-right font-semibold text-gray-600">Paid</th>
+                  <th className="px-4 py-3 text-center font-semibold text-gray-600">Status</th>
+                  <th className="px-4 py-3 text-right font-semibold text-gray-600">Actions</th>
                 </tr>
-              ) : (
-                payments.map((payment) => (
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {payments.map((payment) => (
                   <tr key={payment._id} className="hover:bg-gray-50">
                     <td className="px-4 py-3">
                       <div>
@@ -132,9 +168,7 @@ export default function PaymentsPage() {
                     <td className="px-4 py-3 text-right text-gray-700">{payment.totalMilk} L</td>
                     <td className="px-4 py-3 text-right font-medium text-gray-800">{formatCurrency(payment.totalAmount)}</td>
                     <td className="px-4 py-3 text-right text-green-700">{payment.amountPaid > 0 ? formatCurrency(payment.amountPaid) : '—'}</td>
-                    <td className="px-4 py-3 text-center">
-                      <StatusBadge status={payment.status} />
-                    </td>
+                    <td className="px-4 py-3 text-center"><StatusBadge status={payment.status} /></td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-2">
                         <select
@@ -150,11 +184,11 @@ export default function PaymentsPage() {
                       </div>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   );
