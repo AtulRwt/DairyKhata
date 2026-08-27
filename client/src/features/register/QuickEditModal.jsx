@@ -82,7 +82,7 @@ export default function QuickEditModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-xs">
+    <div className="fixed inset-0 bg-black/50 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-xs">
       <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in slide-in-from-bottom duration-200">
         
         {/* Header */}
@@ -104,7 +104,8 @@ export default function QuickEditModal({
         </div>
 
         {/* Content Body */}
-        <div className="p-5 space-y-5">
+        <div className="p-5 space-y-5 pb-8 sm:pb-5">
+
           
           {/* Main Quantity Stepper */}
           <div className="flex items-center justify-center gap-4 bg-gray-50 rounded-2xl p-4 border border-gray-100">

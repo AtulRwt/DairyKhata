@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { customersAPI, windowsAPI } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { formatCurrency } from '../utils/dateUtils';
+import CustomerAnalyticsModal from '../features/customers/CustomerAnalyticsModal';
 
 const STATUS_BADGE = {
   true:  <span className="badge-paid">Active</span>,
@@ -43,13 +43,14 @@ function CustomerModal({ customer, windows, onClose, onSaved, defaultRate }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
-      <div className="bg-white rounded-t-2xl sm:rounded-xl shadow-2xl w-full sm:max-w-lg max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between px-5 py-4 border-b sticky top-0 bg-white">
+    <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-[100] p-0 sm:p-4 backdrop-blur-xs">
+      <div className="bg-white rounded-t-2xl sm:rounded-xl shadow-2xl w-full sm:max-w-lg max-h-[85vh] sm:max-h-[90vh] overflow-y-auto flex flex-col">
+        <div className="flex items-center justify-between px-5 py-4 border-b sticky top-0 bg-white z-10 flex-shrink-0">
           <h2 className="font-bold text-gray-800">{customer ? 'Edit Customer' : 'Add Customer'}</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl w-8 h-8 flex items-center justify-center">×</button>
         </div>
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+        <form onSubmit={handleSubmit} className="p-5 space-y-4 overflow-y-auto flex-1 pb-8 sm:pb-5">
+
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
               {error}
@@ -144,6 +145,7 @@ export default function CustomersPage() {
   const [showActive, setShowActive] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editCustomer, setEditCustomer] = useState(null);
+  const [analyticsCustomer, setAnalyticsCustomer] = useState(null);
   const [defaultRate, setDefaultRate] = useState(60);
 
   const load = async () => {
@@ -169,7 +171,8 @@ export default function CustomersPage() {
     load();
   };
 
-  const handleToggleStatus = async (customer) => {
+  const handleToggleStatus = async (customer, e) => {
+    if (e) e.stopPropagation();
     try {
       await customersAPI.updateStatus(customer._id, !customer.active);
       load();
@@ -232,84 +235,86 @@ export default function CustomersPage() {
         </div>
       ) : (
         <>
-          {/* Mobile card list */}
+          {/* Mobile card list (clean & simple: Name, Rate, Status) */}
           <div className="space-y-2 md:hidden">
             {customers.map((customer) => (
-              <div key={customer._id} className="card p-4">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-semibold text-gray-800">{customer.name}</p>
-                      {STATUS_BADGE[customer.active]}
-                    </div>
-                    <p className="text-sm text-gray-500 mt-0.5">{customer.phone}</p>
-                    {customer.address && (
-                      <p className="text-xs text-gray-400 mt-0.5 truncate">{customer.address}</p>
-                    )}
-                    <div className="flex items-center gap-3 mt-1.5 text-xs text-gray-500">
-                      <span>₹{customer.milkRate}/L</span>
-                      {customer.windowId?.name && <span>· {customer.windowId.name}</span>}
-                    </div>
+              <div
+                key={customer._id}
+                onClick={() => setAnalyticsCustomer(customer)}
+                className="card p-3.5 cursor-pointer hover:border-green-300 transition-all active:scale-[0.99] flex items-center justify-between gap-3"
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold text-gray-800 hover:text-green-600 truncate">
+                      {customer.name}
+                    </p>
+                    {STATUS_BADGE[customer.active]}
                   </div>
-                  <div className="flex flex-col gap-1.5 items-end flex-shrink-0">
-                    <button
-                      onClick={() => { setEditCustomer(customer); setShowModal(true); }}
-                      className="text-xs text-blue-600 font-medium px-2 py-1 rounded-lg hover:bg-blue-50"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleToggleStatus(customer)}
-                      className={`text-xs font-medium px-2 py-1 rounded-lg ${
-                        customer.active
-                          ? 'text-red-500 hover:bg-red-50'
-                          : 'text-green-600 hover:bg-green-50'
-                      }`}
-                    >
-                      {customer.active ? 'Deactivate' : 'Activate'}
-                    </button>
-                  </div>
+                  <p className="text-xs font-medium text-green-700 mt-0.5">
+                    ₹{customer.milkRate}/L
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                  <button
+                    onClick={() => { setEditCustomer(customer); setShowModal(true); }}
+                    className="text-xs text-blue-600 font-medium px-2 py-1 rounded-lg hover:bg-blue-50"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={(e) => handleToggleStatus(customer, e)}
+                    className={`text-xs font-medium px-2 py-1 rounded-lg ${
+                      customer.active
+                        ? 'text-red-500 hover:bg-red-50'
+                        : 'text-green-600 hover:bg-green-50'
+                    }`}
+                  >
+                    {customer.active ? 'Deactivate' : 'Activate'}
+                  </button>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Desktop table */}
+          {/* Desktop table (clean & simple: Name, Rate, Status) */}
           <div className="hidden md:block card p-0 overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-600">Name</th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-600">Phone</th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-600">Window</th>
-                  <th className="px-4 py-3 text-right font-semibold text-gray-600">Rate</th>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-600">Customer Name</th>
+                  <th className="px-4 py-3 text-right font-semibold text-gray-600">Milk Rate</th>
                   <th className="px-4 py-3 text-center font-semibold text-gray-600">Status</th>
                   <th className="px-4 py-3 text-right font-semibold text-gray-600">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {customers.map((customer) => (
-                  <tr key={customer._id} className="hover:bg-gray-50 transition-colors">
+                  <tr
+                    key={customer._id}
+                    onClick={() => setAnalyticsCustomer(customer)}
+                    className="hover:bg-green-50/40 cursor-pointer transition-colors"
+                  >
                     <td className="px-4 py-3">
-                      <div>
-                        <p className="font-medium text-gray-800">{customer.name}</p>
-                        {customer.address && (
-                          <p className="text-xs text-gray-400 truncate max-w-40">{customer.address}</p>
-                        )}
-                      </div>
+                      <p className="font-medium text-gray-800 hover:text-green-600 flex items-center gap-1.5">
+                        {customer.name}
+                        <span className="text-[10px] text-gray-400">📊</span>
+                      </p>
                     </td>
-                    <td className="px-4 py-3 text-gray-600">{customer.phone}</td>
-                    <td className="px-4 py-3 text-gray-500">
-                      {customer.windowId?.name || <span className="text-gray-300">—</span>}
-                    </td>
-                    <td className="px-4 py-3 text-right font-medium text-gray-700">
+                    <td className="px-4 py-3 text-right font-semibold text-green-700">
                       ₹{customer.milkRate}/L
                     </td>
                     <td className="px-4 py-3 text-center">
                       {STATUS_BADGE[customer.active]}
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          onClick={() => setAnalyticsCustomer(customer)}
+                          className="text-xs text-green-600 hover:text-green-800 font-semibold bg-green-50 px-2 py-1 rounded"
+                        >
+                          View & Edit
+                        </button>
                         <button
                           onClick={() => { setEditCustomer(customer); setShowModal(true); }}
                           className="text-xs text-blue-600 hover:text-blue-800 font-medium"
@@ -317,7 +322,7 @@ export default function CustomersPage() {
                           Edit
                         </button>
                         <button
-                          onClick={() => handleToggleStatus(customer)}
+                          onClick={(e) => handleToggleStatus(customer, e)}
                           className={`text-xs font-medium ${customer.active ? 'text-red-500 hover:text-red-700' : 'text-green-600 hover:text-green-800'}`}
                         >
                           {customer.active ? 'Deactivate' : 'Activate'}
@@ -329,9 +334,11 @@ export default function CustomersPage() {
               </tbody>
             </table>
           </div>
+
         </>
       )}
 
+      {/* Add / Edit Customer Modal */}
       {showModal && (
         <CustomerModal
           customer={editCustomer}
@@ -339,6 +346,16 @@ export default function CustomersPage() {
           onClose={() => { setShowModal(false); setEditCustomer(null); }}
           onSaved={handleSaved}
           defaultRate={defaultRate}
+        />
+      )}
+
+      {/* Customer Analytics & Detail Pop-up Modal */}
+      {analyticsCustomer && (
+        <CustomerAnalyticsModal
+          customer={analyticsCustomer}
+          windows={windows}
+          onClose={() => setAnalyticsCustomer(null)}
+          onUpdated={load}
         />
       )}
     </div>

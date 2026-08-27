@@ -2,7 +2,9 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { milkAPI, windowsAPI } from '../../services/api';
 import EditableCell from './EditableCell';
 import QuickEditModal from './QuickEditModal';
+import CustomerAnalyticsModal from '../customers/CustomerAnalyticsModal';
 import LoadingSpinner from '../../components/LoadingSpinner';
+
 import {
   getDaysInMonth,
   getDayOfWeek,
@@ -39,6 +41,8 @@ export default function MonthlyRegister() {
   // Selected / editing cell: { customerId, day }
   const [selected, setSelected] = useState(null);
   const [editing, setEditing] = useState(null);
+  const [analyticsCustomer, setAnalyticsCustomer] = useState(null);
+
   
   // Track window size for mobile quick edit modal vs desktop inline edit
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
@@ -315,13 +319,15 @@ export default function MonthlyRegister() {
                     <tr key={cid}>
                       {/* Customer name column */}
                       <td
-                        className="col-name"
+                        className="col-name hover:bg-green-50/80 cursor-pointer transition-colors"
                         style={{ fontSize: `${Math.round(13 * zoom)}px` }}
-                        title={`${row.customer.name} · ${row.customer.phone}`}
+                        title={`Click for analytics · ${row.customer.name} (${row.customer.phone})`}
+                        onClick={() => setAnalyticsCustomer(row.customer)}
                       >
                         <div className="flex flex-col leading-tight">
-                          <span className="font-medium text-gray-800 truncate" style={{ maxWidth: `${Math.round(145 * zoom)}px` }}>
+                          <span className="font-medium text-gray-800 hover:text-green-600 truncate flex items-center gap-1" style={{ maxWidth: `${Math.round(145 * zoom)}px` }}>
                             {row.customer.name}
+                            <span className="text-[10px] text-gray-400">📊</span>
                           </span>
                           {row.customer.windowId && (
                             <span className="text-gray-400" style={{ fontSize: `${Math.round(9 * zoom)}px` }}>
@@ -330,6 +336,7 @@ export default function MonthlyRegister() {
                           )}
                         </div>
                       </td>
+
 
                       {/* Day cells */}
                       {days.map((day) => {
@@ -427,7 +434,18 @@ export default function MonthlyRegister() {
         />
       )}
 
+      {/* Customer Analytics & Detail Modal */}
+      {analyticsCustomer && (
+        <CustomerAnalyticsModal
+          customer={analyticsCustomer}
+          windows={windows}
+          onClose={() => setAnalyticsCustomer(null)}
+          onUpdated={loadData}
+        />
+      )}
+
       {/* Status bar */}
+
       <div className="flex-shrink-0 bg-white border-t border-gray-100 px-3 sm:px-4 py-1.5 flex items-center gap-3 text-xs text-gray-500 overflow-x-auto">
         <span>{filteredData.length} customers</span>
         <span>·</span>
